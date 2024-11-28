@@ -1,4 +1,3 @@
-# network_utils.py
 import subprocess
 
 def get_wireless_interfaces():
