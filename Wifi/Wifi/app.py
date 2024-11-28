@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, jsonify, render_template, request
 from network_utils import get_wireless_interfaces, set_monitor_mode, scan_wifi_networks
 from attack_utils import capture_handshake, deauth_attack, ddos_attack
